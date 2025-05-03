@@ -2,7 +2,7 @@
 
 import { Command } from 'commander';
 import { prompt } from 'inquirer';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import ora from 'ora';
 import * as dotenv from 'dotenv';
 import { Publisher, PublisherConfig, SocialNetwork, PublishResult } from './publisher';
@@ -53,7 +53,7 @@ program
       if (options.dryRun) {
         spinner.stop();
         console.log(chalk.blue('\nDry run - would post to:'), networks.join(', '));
-        console.log(chalk.gray('\nContent:'), content);
+        console.log(chalk.dim('\nContent:'), content);
         return;
       }
 
@@ -70,7 +70,7 @@ program
         if (typedResult.success) {
           console.log(chalk.green(`✓ ${network}: Posted successfully`));
           if (typedResult.postId) {
-            console.log(chalk.gray(`  Post ID: ${typedResult.postId}`));
+            console.log(chalk.dim(`  Post ID: ${typedResult.postId}`));
           }
         } else {
           console.log(chalk.red(`✗ ${network}: ${typedResult.error || 'Unknown error'}`));

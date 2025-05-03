@@ -3,7 +3,7 @@
 import { Command } from 'commander';
 import { prompt } from 'inquirer';
 import * as chalk from 'chalk';
-import * as ora from 'ora';
+import ora from 'ora';
 import * as dotenv from 'dotenv';
 import { Publisher, PublisherConfig, SocialNetwork, PublishResult } from './publisher';
 import { readFileSync } from 'fs';

@@ -4,14 +4,15 @@
   "description": "A cross-posting library for multiple social media platforms",
   "main": "dist/index.js",
   "bin": {
-    "polyglot": "./dist/send.js"
+    "polyglot": "dist/send.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/send.js",
     "start": "node dist/send.js",
     "dev": "ts-node src/send.ts",
     "test": "jest",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "postinstall": "chmod +x dist/send.js"
   },
   "keywords": ["social-media", "cross-posting", "cli"],
   "author": "",
@@ -34,5 +35,10 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2"
-  }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }

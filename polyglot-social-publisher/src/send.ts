@@ -8,6 +8,7 @@ import * as dotenv from 'dotenv';
 import { Publisher, PublisherConfig, SocialNetwork, PublishResult } from './publisher';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import { ConfigManager } from './config';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ interface PostOptions {
 }
 
 const program = new Command();
+const configManager = new ConfigManager();
 
 program
   .name('polyglot')
@@ -48,6 +50,24 @@ program
       const spinner = ora('Publishing content...').start();
 
       const config = loadConfig();
+      
+      // Check if any networks are configured
+      const configuredNetworks = Object.keys(config);
+      if (configuredNetworks.length === 0) {
+        spinner.stop();
+        console.error(chalk.red('\nError: No networks configured. Run `polyglot configure` first.'));
+        process.exit(1);
+      }
+
+      // Check if requested networks are configured
+      const unconfiguredNetworks = networks.filter(n => !configuredNetworks.includes(n));
+      if (unconfiguredNetworks.length > 0) {
+        spinner.stop();
+        console.error(chalk.red(`\nError: The following networks are not configured: ${unconfiguredNetworks.join(', ')}`));
+        console.error(chalk.yellow('Run `polyglot configure` to set them up.'));
+        process.exit(1);
+      }
+
       const publisher = new Publisher(config);
 
       if (options.dryRun) {
@@ -104,12 +124,42 @@ program
       }
 
       // Save configuration
-      // TODO: Implement secure credential storage
+      configManager.saveConfig(config);
       console.log(chalk.green('\nConfiguration saved successfully!'));
-      console.log(chalk.yellow('Note: Credentials are stored locally. Keep them secure.'));
+      console.log(chalk.yellow('Note: Credentials are stored in ~/.polyglot/config.json'));
     } catch (error) {
       console.error(chalk.red('\nError:'), error instanceof Error ? error.message : 'Unknown error occurred');
       process.exit(1);
+    }
+  });
+
+program
+  .command('status')
+  .description('Show configured networks and their status')
+  .action(() => {
+    const config = configManager.loadConfig();
+    const networks = Object.keys(config);
+
+    if (networks.length === 0) {
+      console.log(chalk.yellow('No networks configured. Run `polyglot configure` to set up networks.'));
+      return;
+    }
+
+    console.log(chalk.blue('\nConfigured networks:'));
+    for (const network of networks) {
+      console.log(chalk.green(`✓ ${network}`));
+      switch (network) {
+        case 'bluesky':
+          if (config.bluesky?.identifier) {
+            console.log(chalk.dim(`  Identifier: ${config.bluesky.identifier}`));
+          }
+          break;
+        case 'mastodon':
+          if (config.mastodon?.instance) {
+            console.log(chalk.dim(`  Instance: ${config.mastodon.instance}`));
+          }
+          break;
+      }
     }
   });
 
@@ -155,6 +205,13 @@ function getNetworkQuestions(network: string) {
 }
 
 function loadConfig(): PublisherConfig {
+  // First try loading from config file
+  const fileConfig = configManager.loadConfig();
+  if (Object.keys(fileConfig).length > 0) {
+    return fileConfig;
+  }
+
+  // Fall back to environment variables if no file config
   const config: PublisherConfig = {};
 
   if (process.env.BLUESKY_IDENTIFIER && process.env.BLUESKY_PASSWORD) {

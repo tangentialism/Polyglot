@@ -1,6 +1,6 @@
 # Polyglot Social Publisher
 
-A command-line tool and library for cross-posting content to multiple social media platforms. Currently supports Bluesky, Mastodon, and LinkedIn (coming soon).
+A command-line tool and library for cross-posting content to multiple social media platforms. Currently supports Bluesky and Mastodon.
 
 ## Installation
 
@@ -32,9 +32,6 @@ BLUESKY_PASSWORD=your-app-password
 # Mastodon
 MASTODON_INSTANCE=https://mastodon.social
 MASTODON_ACCESS_TOKEN=your-access-token
-
-# LinkedIn
-LINKEDIN_ACCESS_TOKEN=your-access-token
 ```
 
 ## Usage
@@ -61,7 +58,7 @@ polyglot post -c "Hello!" --dry-run
 
 - `-c, --content <content>`: Content to send
 - `-f, --file <file>`: File containing content to send
-- `-n, --networks <networks...>`: Specific networks to send to (bluesky, mastodon, linkedin)
+- `-n, --networks <networks...>`: Specific networks to send to (bluesky, mastodon)
 - `--dry-run`: Preview what would be sent without actually sending
 
 ## Using as a Library
@@ -100,10 +97,6 @@ console.log(results);
 ### Mastodon
 - Requires instance URL and access token
 - Maximum post length: 500 characters (may vary by instance)
-
-### LinkedIn
-- Support coming soon
-- Will require OAuth2 access token
 
 ## Error Handling
 

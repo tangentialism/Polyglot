@@ -1,7 +1,7 @@
 import { BskyAgent } from '@atproto/api';
 import Mastodon from 'mastodon-api';
 
-export type SocialNetwork = 'bluesky' | 'mastodon' | 'linkedin';
+export type SocialNetwork = 'bluesky' | 'mastodon';
 
 export interface PublisherConfig {
   bluesky?: {
@@ -10,9 +10,6 @@ export interface PublisherConfig {
   };
   mastodon?: {
     instance: string;
-    accessToken: string;
-  };
-  linkedin?: {
     accessToken: string;
   };
 }
@@ -46,9 +43,6 @@ export class Publisher {
             break;
           case 'mastodon':
             results[network] = await this.postToMastodon(options.content);
-            break;
-          case 'linkedin':
-            results[network] = await this.postToLinkedIn(options.content);
             break;
         }
       } catch (error) {
@@ -115,17 +109,5 @@ export class Publisher {
         error: error instanceof Error ? error.message : 'Failed to post to Mastodon'
       };
     }
-  }
-
-  private async postToLinkedIn(content: string): Promise<PublishResult> {
-    if (!this.config.linkedin) {
-      return { success: false, error: 'LinkedIn credentials not configured' };
-    }
-
-    // TODO: Implement LinkedIn API integration
-    return {
-      success: false,
-      error: 'LinkedIn integration not yet implemented'
-    };
   }
 } 

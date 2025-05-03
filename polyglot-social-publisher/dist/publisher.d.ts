@@ -1,4 +1,4 @@
-export type SocialNetwork = 'bluesky' | 'mastodon' | 'linkedin';
+export type SocialNetwork = 'bluesky' | 'mastodon';
 export interface PublisherConfig {
     bluesky?: {
         identifier: string;
@@ -6,9 +6,6 @@ export interface PublisherConfig {
     };
     mastodon?: {
         instance: string;
-        accessToken: string;
-    };
-    linkedin?: {
         accessToken: string;
     };
 }
@@ -27,5 +24,4 @@ export declare class Publisher {
     publish(options: PublishOptions): Promise<Record<SocialNetwork, PublishResult>>;
     private postToBluesky;
     private postToMastodon;
-    private postToLinkedIn;
 }

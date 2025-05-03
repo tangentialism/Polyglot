@@ -32,7 +32,7 @@ program
   .description('Post content to configured social networks')
   .option('-c, --content <content>', 'Content to post')
   .option('-f, --file <file>', 'File containing content to post')
-  .option('-n, --networks <networks...>', 'Specific networks to post to (bluesky, mastodon, linkedin)')
+  .option('-n, --networks <networks...>', 'Specific networks to post to (bluesky, mastodon)')
   .option('--dry-run', 'Show what would be posted without actually posting')
   .action(async (options: PostOptions) => {
     try {
@@ -46,7 +46,7 @@ program
         process.exit(1);
       }
 
-      const networks = options.networks || ['bluesky', 'mastodon', 'linkedin'];
+      const networks = options.networks || ['bluesky', 'mastodon'];
       const spinner = ora('Publishing content...').start();
 
       const config = loadConfig();
@@ -112,7 +112,7 @@ program
           type: 'checkbox',
           name: 'networks',
           message: 'Select networks to configure:',
-          choices: ['bluesky', 'mastodon', 'linkedin']
+          choices: ['bluesky', 'mastodon']
         }
       ]);
 
@@ -191,14 +191,6 @@ function getNetworkQuestions(network: string) {
           message: 'Enter your Mastodon access token:'
         }
       ];
-    case 'linkedin':
-      return [
-        {
-          type: 'password',
-          name: 'accessToken',
-          message: 'Enter your LinkedIn access token:'
-        }
-      ];
     default:
       return [];
   }
@@ -225,12 +217,6 @@ function loadConfig(): PublisherConfig {
     config.mastodon = {
       instance: process.env.MASTODON_INSTANCE,
       accessToken: process.env.MASTODON_ACCESS_TOKEN
-    };
-  }
-
-  if (process.env.LINKEDIN_ACCESS_TOKEN) {
-    config.linkedin = {
-      accessToken: process.env.LINKEDIN_ACCESS_TOKEN
     };
   }
 

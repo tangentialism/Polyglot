@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-polyglot-publisher",
+  "name": "Polyglot Publisher",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Publish your notes to Bluesky, Mastodon, and LinkedIn when tagged with #smallpost",
+  "author": "David Yee",
+  "authorUrl": "https://github.com/davidyee",
+  "isDesktopOnly": false
+} 

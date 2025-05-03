@@ -1,0 +1,47 @@
+/* Settings styles */
+.polyglot-publisher-settings h2 {
+  margin-bottom: 1em;
+}
+
+.polyglot-publisher-settings h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+/* Status bar styles */
+.polyglot-publisher-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.polyglot-publisher-status-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.polyglot-publisher-status-icon.ready {
+  background-color: var(--interactive-accent);
+}
+
+.polyglot-publisher-status-icon.publishing {
+  background-color: var(--text-warning);
+  animation: pulse 1s infinite;
+}
+
+.polyglot-publisher-status-icon.error {
+  background-color: var(--text-error);
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+} 

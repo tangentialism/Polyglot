@@ -2,7 +2,8 @@
   "name": "polyglot-social-publisher",
   "version": "1.0.0",
   "description": "A cross-posting library for multiple social media platforms",
-  "main": "dist/index.js",
+  "main": "dist/publisher.js",
+  "types": "dist/publisher.d.ts",
   "bin": {
     "polyglot": "dist/send.js"
   },
@@ -38,6 +39,7 @@
   },
   "files": [
     "dist",
+    "dist/**/*.d.ts",
     "README.md",
     "LICENSE"
   ]

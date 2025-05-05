@@ -1,34 +1,46 @@
 {
-  "name": "obsidian-polyglot-publisher",
+  "name": "polyglot-social-publisher",
   "version": "1.0.0",
-  "description": "Publish your notes to Bluesky, Mastodon, and LinkedIn when tagged with #smallpost",
-  "main": "main.js",
+  "description": "A cross-posting library for multiple social media platforms",
+  "main": "dist/publisher.js",
+  "types": "dist/publisher.d.ts",
+  "bin": {
+    "polyglot": "dist/send.js"
+  },
   "scripts": {
-    "dev": "node esbuild.config.mjs",
-    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-    "version": "node version-bump.mjs && git add manifest.json versions.json"
+    "build": "tsc && chmod +x dist/send.js",
+    "start": "node dist/send.js",
+    "dev": "ts-node src/send.ts",
+    "test": "jest",
+    "prepare": "npm run build",
+    "preinstall": "npm run build || true"
   },
-  "keywords": [
-    "obsidian",
-    "obsidian-plugin",
-    "social-media",
-    "bluesky",
-    "mastodon",
-    "linkedin"
-  ],
+  "keywords": ["social-media", "cross-posting", "cli"],
   "author": "David Yee",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^16.11.6",
-    "@typescript-eslint/eslint-plugin": "^5.2.0",
-    "@typescript-eslint/parser": "^5.2.0",
-    "builtin-modules": "^3.2.0",
-    "esbuild": "0.13.12",
-    "obsidian": "latest",
-    "tslib": "2.3.1",
-    "typescript": "4.4.4"
-  },
+  "license": "ISC",
+  "type": "commonjs",
   "dependencies": {
-    "polyglot-social-publisher": "file:../polyglot-social-publisher"
-  }
+    "@atproto/api": "^0.15.5",
+    "@types/node": "^20.11.24",
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.5",
+    "masto": "^7.0.0",
+    "typescript": "^5.3.3",
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.6",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/inquirer": "^8.2.6",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2"
+  },
+  "files": [
+    "dist",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ]
 } 

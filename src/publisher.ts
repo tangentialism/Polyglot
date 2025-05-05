@@ -1,88 +1,130 @@
-import { BlueskyClient } from './clients/bluesky';
-import { MastodonClient } from './clients/mastodon';
-import { Post, PostResult } from './types/post';
-import { PublisherConfig, PlatformSpecificOptions } from './types/config';
-import { SocialPlatformClient } from './clients/base-client';
+import { BskyAgent } from '@atproto/api';
+import { createRestAPIClient } from 'masto';
 
-export class SocialPublisher {
-  private clients: Map<string, SocialPlatformClient> = new Map();
+export type SocialNetwork = 'bluesky' | 'mastodon';
+
+export interface PublisherConfig {
+  bluesky?: {
+    identifier: string;
+    password: string;
+  };
+  mastodon?: {
+    instance: string;
+    accessToken: string;
+  };
+}
+
+export interface PublishResult {
+  success: boolean;
+  error?: string;
+  postId?: string;
+  url?: string;
+}
+
+export interface PublishOptions {
+  content: string;
+  networks: SocialNetwork[];
+}
+
+export class Publisher {
   private config: PublisherConfig;
 
   constructor(config: PublisherConfig) {
     this.config = config;
-    this.initializeClients();
   }
 
-  private initializeClients(): void {
-    if (this.config.bluesky) {
-      this.clients.set('bluesky', new BlueskyClient(this.config.bluesky));
-    }
-    if (this.config.mastodon) {
-      this.clients.set('mastodon', new MastodonClient(this.config.mastodon));
-    }
-    // LinkedIn client will be added here
-  }
+  async publish(options: PublishOptions): Promise<Record<SocialNetwork, PublishResult>> {
+    const results: Partial<Record<SocialNetwork, PublishResult>> = {};
 
-  async initialize(): Promise<void> {
-    const initPromises = Array.from(this.clients.values()).map(client => 
-      client.initialize().catch(error => {
-        throw new Error(`Failed to initialize client: ${error.message}`);
-      })
-    );
-    await Promise.all(initPromises);
-  }
-
-  async verifyCredentials(): Promise<Map<string, boolean>> {
-    const results = new Map<string, boolean>();
-    
-    for (const [platform, client] of this.clients) {
+    for (const network of options.networks) {
       try {
-        const isValid = await client.verifyCredentials();
-        results.set(platform, isValid);
+        switch (network) {
+          case 'bluesky':
+            results[network] = await this.postToBluesky(options.content);
+            break;
+          case 'mastodon':
+            results[network] = await this.postToMastodon(options.content);
+            break;
+        }
       } catch (error) {
-        results.set(platform, false);
-      }
-    }
-
-    return results;
-  }
-
-  async publish(
-    post: Post,
-    platforms?: string[],
-    options?: Record<string, PlatformSpecificOptions>
-  ): Promise<Map<string, PostResult>> {
-    const results = new Map<string, PostResult>();
-    const clientsToUse = platforms
-      ? Array.from(this.clients.entries()).filter(([platform]) => platforms.includes(platform))
-      : Array.from(this.clients.entries());
-
-    const publishPromises = clientsToUse.map(async ([platform, client]) => {
-      try {
-        const platformOptions = options?.[platform];
-        const result = await client.publish(post, platformOptions);
-        results.set(platform, result);
-      } catch (error) {
-        results.set(platform, {
-          platform,
+        results[network] = {
           success: false,
-          error: error instanceof Error ? error : new Error(String(error)),
-          timestamp: new Date()
-        });
+          error: error instanceof Error ? error.message : 'Unknown error occurred'
+        };
       }
-    });
+    }
 
-    await Promise.all(publishPromises);
-    return results;
+    return results as Record<SocialNetwork, PublishResult>;
   }
 
-  async cleanup(): Promise<void> {
-    const cleanupPromises = Array.from(this.clients.values()).map(client => 
-      client.cleanup().catch(error => {
-        console.error(`Failed to cleanup client: ${error.message}`);
-      })
-    );
-    await Promise.all(cleanupPromises);
-    this.clients.clear();
+  private async postToBluesky(content: string): Promise<PublishResult> {
+    if (!this.config.bluesky) {
+      return { success: false, error: 'Bluesky credentials not configured' };
+    }
+
+    try {
+      console.log('Attempting to post to Bluesky...');
+      const agent = new BskyAgent({ service: 'https://bsky.social' });
+      await agent.login({
+        identifier: this.config.bluesky.identifier,
+        password: this.config.bluesky.password,
+      });
+      console.log('Successfully logged in to Bluesky');
+
+      const response = await agent.post({
+        text: content,
+      });
+      console.log('Bluesky API response:', response);
+
+      const postId = response.uri;
+      const url = `https://bsky.app/profile/${postId.split('/')[2]}/post/${postId.split('/').pop()}`;
+      console.log('Bluesky post URL:', url);
+
+      return {
+        success: true,
+        postId: postId,
+        url: url
+      };
+    } catch (error) {
+      console.error('Bluesky API error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to post to Bluesky'
+      };
+    }
+  }
+
+  private async postToMastodon(content: string): Promise<PublishResult> {
+    if (!this.config.mastodon) {
+      return { success: false, error: 'Mastodon credentials not configured' };
+    }
+
+    try {
+      console.log('Attempting to post to Mastodon...');
+      console.log('Creating Mastodon client with instance:', this.config.mastodon.instance);
+      
+      const masto = createRestAPIClient({
+        url: this.config.mastodon.instance,
+        accessToken: this.config.mastodon.accessToken,
+      });
+
+      const status = await masto.v1.statuses.create({
+        status: content,
+        visibility: 'public'
+      });
+      console.log('Mastodon API response:', status);
+
+      return {
+        success: true,
+        postId: status.id,
+        url: status.url || undefined
+      };
+    } catch (error) {
+      console.error('Mastodon API error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to post to Mastodon'
+      };
+    }
   }
 } 

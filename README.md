@@ -1,156 +1,133 @@
-# Obsidian Polyglot Publisher
+# Polyglot Social Publisher
 
-A powerful cross-posting plugin for Obsidian that lets you publish your notes to multiple social networks simultaneously. Currently supports Bluesky, Mastodon, and LinkedIn.
-
-## Features
-
-- 📝 Publish notes to multiple social networks with a single tag
-- 🔄 Smart content adaptation for each platform
-- 🎯 Selective publishing to specific networks
-- 📊 Real-time publishing status in the status bar
-- 🔐 Secure credential management
-- ✨ Preserves markdown formatting where supported
-- 🏷️ Intelligent tag handling
+A command-line tool and library for cross-posting content to multiple social media platforms. Currently supports Bluesky and Mastodon.
 
 ## Installation
 
-1. Open Obsidian Settings
-2. Go to Community Plugins and disable Safe Mode
-3. Click Browse and search for "Polyglot Publisher"
-4. Install the plugin
-5. Enable the plugin in your list of installed plugins
+```bash
+npm install -g polyglot-social-publisher
+```
 
 ## Configuration
 
-### Plugin Settings
+Before using the tool, you'll need to configure your social media credentials. You can do this in two ways:
 
-1. Open Obsidian Settings
-2. Navigate to the "Polyglot Publisher" section
-3. Configure your social network credentials:
+### 1. Using the Interactive Configuration
 
-#### Bluesky
-- Enable/disable Bluesky integration
-- Enter your identifier (handle)
-- Enter your password/app password
+Run the following command and follow the interactive prompts:
 
-#### Mastodon
-- Enable/disable Mastodon integration
-- Enter your instance URL
-- Enter your access token
+```bash
+polyglot configure
+```
 
-#### LinkedIn
-- Enable/disable LinkedIn integration
-- Enter your access token
-- (Optional) Enter organization ID for posting as an organization
+### 2. Using Environment Variables
 
-### Global Settings
-- Set default post visibility (public/private)
-- Configure retry attempts and delay
-- Enable/disable networks globally
+Create a `.env` file in your working directory with the following variables:
+
+```env
+# Bluesky
+BLUESKY_IDENTIFIER=your.identifier.bsky.social
+BLUESKY_PASSWORD=your-app-password
+
+# Mastodon
+MASTODON_INSTANCE=https://mastodon.social
+MASTODON_ACCESS_TOKEN=your-access-token
+```
 
 ## Usage
 
-### Basic Publishing
+### Sending Posts
 
-1. Add the `#smallpost` tag to any note you want to publish
-2. The plugin will automatically process and publish the note to all enabled networks
+Send content directly to your configured social networks:
 
-### Frontmatter Configuration
+```bash
+# Send using inline content
+polyglot post -c "Hello, world! 👋"
 
-Control publishing behavior with YAML frontmatter:
+# Send from a file
+polyglot post -f content.txt
 
-```yaml
----
-title: "Your Post Title"
-tags: [smallpost, tech, discussion]
-networks: [bluesky, mastodon]  # Optional: specify target networks
-visibility: public             # Optional: override default visibility
----
+# Send to specific networks
+polyglot post -c "Hello!" -n bluesky mastodon
+
+# Preview without sending (dry run)
+polyglot post -c "Hello!" --dry-run
 ```
 
-### Network Selection
+### Command Options
 
-You can control which networks receive your post in two ways:
+- `-c, --content <content>`: Content to send
+- `-f, --file <file>`: File containing content to send
+- `-n, --networks <networks...>`: Specific networks to send to (bluesky, mastodon)
+- `--dry-run`: Preview what would be sent without actually sending
 
-1. **Global Settings**: Enable/disable networks in plugin settings
-2. **Per-Post Selection**: Use the `networks` frontmatter field
+## Using as a Library
 
-Available networks:
-- `bluesky`
-- `mastodon`
-- `linkedin`
+You can also use Polyglot Social Publisher as a library in your TypeScript/JavaScript projects:
 
-Posts will only publish to networks that are both:
-- Specified in the post's `networks` field (if present)
-- Enabled in plugin settings
+```typescript
+import { Publisher } from 'polyglot-social-publisher';
 
-### Content Formatting
+const publisher = new Publisher({
+  bluesky: {
+    identifier: 'user.bsky.social',
+    password: 'app-password'
+  },
+  mastodon: {
+    instance: 'https://mastodon.social',
+    accessToken: 'access-token'
+  }
+});
 
-The plugin automatically:
-- Converts Obsidian-specific links (`[[]]`) to plain text
-- Handles images and external links appropriately
-- Preserves hashtags
-- Adapts content length for platform limits:
-  - Bluesky: 300 characters
-  - Mastodon: 500 characters
-  - LinkedIn: Varies by post type
+// Send to all configured networks
+const results = await publisher.publish({
+  content: 'Hello from Polyglot!',
+  networks: ['bluesky', 'mastodon']
+});
 
-### Status Indicators
+console.log(results);
+```
 
-The plugin shows publishing status in the Obsidian status bar:
-- 🔄 Publishing in progress
-- ✅ Successfully published
-- ❌ Publishing failed
+## Platform-Specific Notes
 
-## Example Notes
+### Bluesky
+- Requires an account identifier and app password
+- Maximum post length: 300 characters
 
-See the `examples/` directory for sample notes demonstrating:
-1. Simple posts
-2. Posts with media
-3. Thread/long-form content
-4. Network-selective posting
+### Mastodon
+- Requires instance URL and access token
+- Maximum post length: 500 characters (may vary by instance)
 
-## Troubleshooting
+## Error Handling
 
-### Common Issues
+The tool provides detailed error messages for common issues:
+- Network connectivity problems
+- Authentication failures
+- Content length violations
+- Rate limiting
 
-1. **Authentication Failures**
-   - Verify your credentials in plugin settings
-   - Check network connectivity
-   - Ensure API endpoints are accessible
+## Development
 
-2. **Content Not Publishing**
-   - Confirm the `#smallpost` tag is present
-   - Check enabled networks in settings
-   - Verify frontmatter syntax
+To run the tool locally during development:
 
-3. **Formatting Issues**
-   - Review platform-specific limitations
-   - Check for unsupported markdown features
-   - Verify media file formats and sizes
+```bash
+# Install dependencies
+npm install
 
-### Error Messages
+# Run in development mode
+npm run dev
 
-The plugin provides detailed error messages in:
-- The status bar
-- Obsidian's console (Ctrl/Cmd + Shift + I)
-- Plugin settings debug section
+# Build the package
+npm run build
 
-## Privacy & Security
-
-- Credentials are stored securely in Obsidian's encrypted storage
-- No data is sent to third parties beyond the selected social networks
-- All network communication is done directly with official APIs
+# Run the built version
+npm start
+```
 
 ## Contributing
 
-Contributions are welcome! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- [GitHub Issues](https://github.com/yourusername/obsidian-polyglot-publisher/issues)
-- [Plugin Discussions](https://github.com/yourusername/obsidian-polyglot-publisher/discussions) 
+ISC 

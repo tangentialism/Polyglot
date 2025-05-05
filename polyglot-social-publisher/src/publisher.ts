@@ -18,6 +18,7 @@ export interface PublishResult {
   success: boolean;
   error?: string;
   postId?: string;
+  url?: string;
 }
 
 export interface PublishOptions {
@@ -62,21 +63,30 @@ export class Publisher {
     }
 
     try {
+      console.log('Attempting to post to Bluesky...');
       const agent = new BskyAgent({ service: 'https://bsky.social' });
       await agent.login({
         identifier: this.config.bluesky.identifier,
         password: this.config.bluesky.password,
       });
+      console.log('Successfully logged in to Bluesky');
 
       const response = await agent.post({
         text: content,
       });
+      console.log('Bluesky API response:', response);
+
+      const postId = response.uri;
+      const url = `https://bsky.app/profile/${postId.split('/')[2]}/post/${postId.split('/').pop()}`;
+      console.log('Bluesky post URL:', url);
 
       return {
         success: true,
-        postId: response.uri
+        postId: postId,
+        url: url
       };
     } catch (error) {
+      console.error('Bluesky API error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to post to Bluesky'
@@ -90,6 +100,8 @@ export class Publisher {
     }
 
     try {
+      console.log('Attempting to post to Mastodon...');
+      console.log('Creating Mastodon client with instance:', this.config.mastodon.instance);
       const mastodon = new Mastodon({
         access_token: this.config.mastodon.accessToken,
         api_url: `${this.config.mastodon.instance}/api/v1/`
@@ -98,12 +110,18 @@ export class Publisher {
       const response = await mastodon.post('statuses', {
         status: content
       });
+      console.log('Mastodon API response:', response);
+
+      const url = response.data.url;
+      console.log('Mastodon post URL:', url);
 
       return {
         success: true,
-        postId: response.data.id
+        postId: response.data.id,
+        url: url
       };
     } catch (error) {
+      console.error('Mastodon API error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to post to Mastodon'

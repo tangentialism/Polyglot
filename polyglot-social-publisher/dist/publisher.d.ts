@@ -13,6 +13,7 @@ export interface PublishResult {
     success: boolean;
     error?: string;
     postId?: string;
+    url?: string;
 }
 export interface PublishOptions {
     content: string;
